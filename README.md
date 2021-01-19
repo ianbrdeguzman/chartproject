@@ -4,4 +4,4 @@ Check it out <a href="https://ianbrdeguzman.github.io/chartproject/">here</a>
 * HTML5
 * CSS3
 * JavaScript
-    * Chart.js
+* Chart.js
