@@ -1,11 +1,94 @@
-// data taken from https://data.giss.nasa.gov/gistemp/
-// Zonal annual means from 1880 to present
+// Data taken from https://data.giss.nasa.gov/gistemp/
+// Mean taken from https://earthobservatory.nasa.gov/world-of-change/DecadalTemp
 
-const xAxisLabel = [];
-const yAxisLabel = [];
+// show showChart
+showChart();
 
-// call getData function
-getData();
+// chartjs
+async function showChart() {
+
+    // await for getData function
+    const data = await getData();
+    const ctx = document.getElementById('chart').getContext('2d');
+    const myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.xAxisLabel,
+            datasets: [
+            {
+                label: 'Global Average Temperature',
+                data: data.globalTempsArray,
+                fill: false,
+                backgroundColor: 'rgba(204,0,0,1)',
+                borderColor: 'rgba(204,0,0,1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Northern Hemisphere Average Temperature',
+                data: data.northernTempsArray,
+                fill: false,
+                backgroundColor: 'rgba(0,204,0,1)',
+                borderColor: 'rgba(0,204,0,1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Southern Hemisphere Average Temperature',
+                data: data.southernTempsArray,
+                fill: false,
+                backgroundColor: 'rgba(0,0,204,1)',
+                borderColor: 'rgba(0,0,204,1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Mean Global Temperature',
+                fill: false,
+                backgroundColor: 'rgb(204,204,0)',
+                borderColor: 'rgb(204,204,0)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: 'Global and Hemispheric Zonal Annual Means'
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Years'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Temperature'
+                    },
+                    ticks: {
+                        beginAtZero: false,
+                        callback: function(value) {
+                            return value + '°C';
+                        }
+                     }
+                }],
+            },
+            annotation: {
+                annotations: [
+                {
+                    type: 'line',
+                    mode: 'horizontal',
+                    scaleID: 'y-axis-0',
+                    value: '14',
+                    borderColor: 'rgb(204,204,0)',
+                    borderWidth: 2,
+                    drawTime: "afterDatasetsDraw",
+                }],  
+            },
+        }
+    });
+}
 
 async function getData() {
 
@@ -18,70 +101,36 @@ async function getData() {
     // split data into new lines and slice the headers
     const table = data.split('\n').slice(1);
 
-    // loop over each row
+    // create array for x and y temps array
+    const xAxisLabel = [];
+    const globalTempsArray = [];
+    const northernTempsArray = [];
+    const southernTempsArray = [];
+
+    // loop over each row of the table
     table.forEach( (row) => {
         
         // for each row split the data on comma delimiter
         const column = row.split(',');
 
         // assign first column to year
-        const year = column[0];
+        const years = column[0];
 
         // push current years to xAxisLabel array
-        xAxisLabel.push(year);
+        xAxisLabel.push(years);
         
-        // assign second column to temp
-        const temp = column[1];
+        // assign columns to arrays
+        const globalTemps = column[1];
+        const northenTemps = column[2];
+        const southernTemps = column[3];
+        
 
-        // push current temperature to xAxisLabel array
-        yAxisLabel.push(temp);
-        
+        // push current temperature to array
+        globalTempsArray.push(parseFloat(globalTemps) + 14); // 14 is global mean
+        northernTempsArray.push(parseFloat(northenTemps) + 14); // 14 is global mean
+        southernTempsArray.push(parseFloat(southernTemps) + 14); // 14 is global mean
     })
+
+    // returns an object with multiple array
+    return { xAxisLabel, globalTempsArray, northernTempsArray, southernTempsArray };
 };
-
-// chartjs
-const ctx = document.getElementById('chart').getContext('2d');
-
-const myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: xAxisLabel,
-        datasets: [{
-            label: 'Global Average Temperature',
-            data: yAxisLabel,
-            backgroundColor: [
-                // TODO add random color
-            ],
-            borderColor: [
-                // TODO add random color
-            ],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
-                }
-            }]
-        }
-    }
-});
-
-
-// const rgbArray = [];
-// const rgb = [];
-// const randomColor = (year) => {
-//     for (let i = 0; i < 3; i++) {
-//         const randomNum = Math.floor(Math.random() * 255);
-//         rgb.push(randomNum);   
-//     }
-//     for (let i = 0; i < rgb.length; i++) {
-//         const a = rgb[i];
-//     }
-//     rgbArray.push(`rgb(${rgb})`)
-//     console.log(rgbArray);
-// }
-
-// randomColor();
